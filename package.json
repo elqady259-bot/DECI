@@ -1,0 +1,16 @@
+{
+  "name": "node-starter",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node seed.js",
+    "build": "node -e \"require('./app')\" && echo 'Build OK'"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-mongo-sanitize": "^2.2.0",
+    "mongoose": "^9.7.3"
+  }
+}
