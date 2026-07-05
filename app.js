@@ -1,5 +1,5 @@
-const express = require('express');
-const mongoSanitize = require('express-mongo-sanitize');
+﻿const express = require('express');
+const mongoSanitize = require('./middleware/sanitize');
 
 const categoryRoutes = require('./routes/categoryRoutes');
 const productRoutes = require('./routes/productRoutes');
