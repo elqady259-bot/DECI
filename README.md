@@ -68,7 +68,7 @@ NODE_ENV=development
 
 ```
 .
-├── config/
+├── db/
 │   └── db.js              # MongoDB connection setup
 ├── controllers/           # Business logic for each resource
 │   ├── categoryController.js
