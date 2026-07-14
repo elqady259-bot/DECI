@@ -14,8 +14,19 @@ const categorySchema = new mongoose.Schema(
       trim: true,
       maxlength: [300, 'Description cannot exceed 300 characters'],
     },
+    slug: {
+      type: String,
+      lowercase: true,
+      trim: true,
+    },
   },
   { timestamps: true }
 );
+
+categorySchema.pre('save', async function() {
+  if (this.isModified('name')) {
+    this.slug = this.name.toLowerCase().replace(/\s+/g, '-');
+  }
+});
 
 module.exports = mongoose.model('Category', categorySchema);

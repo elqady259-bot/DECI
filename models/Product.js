@@ -21,6 +21,7 @@ const productSchema = new mongoose.Schema(
     },
     description: {
       type: String,
+      required: [true, 'Product description is required'],
       trim: true,
       maxlength: [1000, 'Description cannot exceed 1000 characters'],
     },
@@ -29,10 +30,21 @@ const productSchema = new mongoose.Schema(
       ref: 'Category',
       required: [true, 'Product must belong to a category'],
     },
+    images: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );
 
-productSchema.index({ name: 'text' });
+productSchema.virtual('inStock').get(function () {
+  return this.stock > 0;
+});
+
+productSchema.set('toJSON', { virtuals: true });
+productSchema.set('toObject', { virtuals: true });
+
+productSchema.index({ name: 'text', description: 'text' });
 
 module.exports = mongoose.model('Product', productSchema);

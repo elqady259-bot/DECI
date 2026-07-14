@@ -12,6 +12,10 @@ const cartItemSchema = new mongoose.Schema(
       required: true,
       min: [1, 'Quantity must be at least 1'],
     },
+    price: {
+      type: Number,
+      required: true,
+    },
   },
   { _id: false }
 );
@@ -25,8 +29,18 @@ const cartSchema = new mongoose.Schema(
       unique: true,
     },
     items: [cartItemSchema],
+    totalPrice: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
+
+cartSchema.methods.calculateTotal = function () {
+  this.totalPrice = this.items.reduce((total, item) => {
+    return total + (item.price * item.quantity);
+  }, 0);
+};
 
 module.exports = mongoose.model('Cart', cartSchema);

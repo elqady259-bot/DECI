@@ -25,6 +25,10 @@ const orderItemSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
   {
+    orderNumber: {
+      type: String,
+      unique: true,
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -37,11 +41,23 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'paid', 'shipped', 'delivered', 'cancelled'],
+      enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],
       default: 'pending',
+    },
+    shippingAddress: {
+      street: String,
+      city: String,
+      country: String,
     },
   },
   { timestamps: true }
 );
+
+orderSchema.pre('save', async function () {
+  if (this.isNew) {
+    const count = await mongoose.model('Order').countDocuments();
+    this.orderNumber = `ORD-${Date.now()}-${count + 1}`;
+  }
+});
 
 module.exports = mongoose.model('Order', orderSchema);

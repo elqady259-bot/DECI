@@ -1,21 +1,42 @@
 const Product = require('../models/Product');
+const Category = require('../models/Category');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 
 exports.createProduct = asyncHandler(async (req, res) => {
+  const { category } = req.body;
+  
+  if (category) {
+    const categoryExists = await Category.findById(category);
+    if (!categoryExists) throw new ApiError('Category not found', 404);
+  }
+  
   const product = await Product.create(req.body);
   res.status(201).json({ success: true, data: product });
 });
 
 exports.getProducts = asyncHandler(async (req, res) => {
-  let query = Product.find();
+  const { category, minPrice, maxPrice, search, inStock, sort, fields, page, limit } = req.query;
 
-  const { category, minPrice, maxPrice, name, sort, fields, page, limit } = req.query;
+  const filter = {};
 
-  if (category) query = query.where('category').equals(category);
-  if (minPrice) query = query.where('price').gte(Number(minPrice));
-  if (maxPrice) query = query.where('price').lte(Number(maxPrice));
-  if (name) query = query.where({ name: { $regex: name, $options: 'i' } });
+  if (category) filter.category = category;
+  if (minPrice || maxPrice) {
+    filter.price = {};
+    if (minPrice) filter.price.$gte = Number(minPrice);
+    if (maxPrice) filter.price.$lte = Number(maxPrice);
+  }
+  if (search) {
+    filter.$or = [
+      { name: { $regex: search, $options: 'i' } },
+      { description: { $regex: search, $options: 'i' } },
+    ];
+  }
+  if (inStock === 'true') {
+    filter.stock = { $gt: 0 };
+  }
+
+  let query = Product.find(filter);
 
   if (sort) {
     const sortBy = sort.split(',').join(' ');
@@ -34,8 +55,8 @@ exports.getProducts = asyncHandler(async (req, res) => {
   const skip = (pageNum - 1) * limitNum;
   query = query.skip(skip).limit(limitNum);
 
-  const products = await query.populate('category', 'name');
-  const total = await Product.countDocuments(query.getFilter());
+  const products = await query.populate('category', 'name description');
+  const total = await Product.countDocuments(filter);
 
   res.status(200).json({
     success: true,
@@ -54,6 +75,13 @@ exports.getProduct = asyncHandler(async (req, res) => {
 });
 
 exports.updateProduct = asyncHandler(async (req, res) => {
+  const { category } = req.body;
+  
+  if (category) {
+    const categoryExists = await Category.findById(category);
+    if (!categoryExists) throw new ApiError('Category not found', 404);
+  }
+  
   const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
